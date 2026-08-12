@@ -20,7 +20,16 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-version: '8.10.2'  # إصدار أحدث مدعوم
+        gradle-version: '8.10.2'
+    
+    - name: Create gradle.properties
+      run: |
+        echo "org.gradle.jvmargs=-Xmx2048m -Xms512m" > gradle.properties
+        echo "org.gradle.parallel=true" >> gradle.properties
+        echo "org.gradle.caching=true" >> gradle.properties
+        echo "org.gradle.daemon=false" >> gradle.properties
+        echo "android.useAndroidX=true" >> gradle.properties
+        echo "android.enableJetifier=true" >> gradle.properties
     
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
