@@ -17,12 +17,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    - name: Clean old gradle.properties
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.10.2'
+    
+    - name: Clean all gradle.properties
       run: |
-        # حذف أي ملفات gradle.properties قديمة
+        # حذف أي ملفات gradle.properties موجودة
         find . -name "gradle.properties" -delete
-        # إنشاء ملف جديد
-        echo "org.gradle.jvmargs=-Xmx2048m -Xms512m" > gradle.properties
+        echo "تم حذف جميع ملفات gradle.properties"
+    
+    - name: Create fresh gradle.properties
+      run: |
+        echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
         echo "org.gradle.parallel=true" >> gradle.properties
         echo "org.gradle.caching=true" >> gradle.properties
         echo "org.gradle.daemon=false" >> gradle.properties
@@ -30,28 +38,12 @@ jobs:
         echo "android.enableJetifier=true" >> gradle.properties
         echo "==================== gradle.properties ===================="
         cat gradle.properties
-        echo "=========================================================="
-    
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: '8.10.2'
     
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
     - name: Build Release APK
-      env:
-        JAVA_OPTS: "-Xmx2048m -Xms512m"
-        GRADLE_OPTS: "-Xmx2048m -Xms512m"
-      run: |
-        # استخدام متغيرات البيئة لتجاوز أي إعدادات
-        export JAVA_OPTS="-Xmx2048m -Xms512m"
-        export GRADLE_OPTS="-Xmx2048m -Xms512m"
-        ./gradlew assembleRelease --no-daemon \
-          -Dorg.gradle.jvmargs="-Xmx2048m -Xms512m" \
-          -Dorg.gradle.daemon=false \
-          --stacktrace
+      run: ./gradlew assembleRelease --no-daemon --stacktrace
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
