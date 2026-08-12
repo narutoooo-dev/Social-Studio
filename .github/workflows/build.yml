@@ -17,15 +17,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    - name: Create gradle.properties
+    - name: Clean old gradle.properties
       run: |
+        # حذف أي ملفات gradle.properties قديمة
+        find . -name "gradle.properties" -delete
+        # إنشاء ملف جديد
         echo "org.gradle.jvmargs=-Xmx2048m -Xms512m" > gradle.properties
         echo "org.gradle.parallel=true" >> gradle.properties
         echo "org.gradle.caching=true" >> gradle.properties
         echo "org.gradle.daemon=false" >> gradle.properties
         echo "android.useAndroidX=true" >> gradle.properties
         echo "android.enableJetifier=true" >> gradle.properties
-        cat gradle.properties  # عرض المحتوى للتأكد
+        echo "==================== gradle.properties ===================="
+        cat gradle.properties
+        echo "=========================================================="
     
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -36,7 +41,17 @@ jobs:
       run: chmod +x gradlew
     
     - name: Build Release APK
-      run: ./gradlew assembleRelease --no-daemon
+      env:
+        JAVA_OPTS: "-Xmx2048m -Xms512m"
+        GRADLE_OPTS: "-Xmx2048m -Xms512m"
+      run: |
+        # استخدام متغيرات البيئة لتجاوز أي إعدادات
+        export JAVA_OPTS="-Xmx2048m -Xms512m"
+        export GRADLE_OPTS="-Xmx2048m -Xms512m"
+        ./gradlew assembleRelease --no-daemon \
+          -Dorg.gradle.jvmargs="-Xmx2048m -Xms512m" \
+          -Dorg.gradle.daemon=false \
+          --stacktrace
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
